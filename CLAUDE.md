@@ -8,6 +8,8 @@ HRM (Human Resource Management) — hệ thống quản lý nhân sự web **mul
 
 **Xem [PLAN.md](PLAN.md)** trước mọi task để nắm scope + sprint hiện tại + guardrails. Cập nhật PLAN.md khi có quyết định lớn.
 
+**Schema chi tiết từng bảng + ER diagram: [DB_SCHEMA.md](DB_SCHEMA.md)**. Cập nhật khi thêm/đổi bảng.
+
 **Stack:**
 - **Backend** (`backend/`): Node + Express 5, PostgreSQL (Sequelize ORM), JWT (cookie + Bearer). Entry: [backend/src/server.js](backend/src/server.js). ESM (`"type": "module"`).
 - **Frontend** (`frontend/`): React 19 + TypeScript + Vite, Tailwind v4, Radix/shadcn (new-york style), Zustand, axios, react-router 7, react-hook-form + zod, sonner.

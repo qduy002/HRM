@@ -44,7 +44,9 @@
 
 ---
 
-## 3. Danh sách bảng — 30 bảng tổng
+## 3. Danh sách bảng — 31 bảng tổng
+
+> 📄 Schema chi tiết từng bảng + ER diagram: xem [DB_SCHEMA.md](DB_SCHEMA.md).
 
 ### 3.1 GLOBAL (không có `companyId`) — 6 bảng
 | Bảng | Mô tả |
@@ -56,11 +58,11 @@
 | `tax_brackets` | Bậc thuế TNCN (7 bậc) |
 | `personal_deduction_rates` | Giảm trừ bản thân (11tr) + người phụ thuộc (4.4tr) |
 
-### 3.2 PER-TENANT (có `companyId` NOT NULL + composite index) — 24 bảng
+### 3.2 PER-TENANT (có `companyId` NOT NULL + composite index) — 25 bảng
 
 **Organization (4)**: `branches`, `departments`, `positions`, `levels`
 
-**Employee (7)**: `employees`, `employee_positions` (lịch sử vị trí), `employee_dependents`, `employee_educations`, `employee_experiences`, `employee_documents`, `contracts`
+**Employee (8)**: `employees`, `employee_positions` (lịch sử vị trí), `contracts`, `employee_dependents` (giảm trừ thuế), `emergency_contacts` (liên hệ khẩn cấp), `employee_educations`, `employee_experiences`, `employee_documents`
 
 **Attendance (3)**: `shifts`, `work_schedules`, `attendances`
 
@@ -157,14 +159,28 @@ protectedRoute (verify JWT)
 
 ### Sprint 1 — Organization + Employee
 **Deliverables:**
-- BE: models `branches`, `departments`, `positions`, `levels`, `employees`, `employee_positions`, `contracts`, `employee_dependents`, `employee_educations`, `employee_experiences`, `employee_documents`
-- BE: CRUD API cho từng bảng, có phân quyền (admin/hr full, manager xem, employee xem mình)
-- BE: Logic gen mã NV theo prefix của tenant
-- FE: Trang danh sách + form CRUD cho: chi nhánh, phòng ban, chức danh, cấp bậc, nhân viên
-- FE: Trang chi tiết nhân viên (tabs: thông tin, hợp đồng, gia đình, học vấn, kinh nghiệm)
-- **Seed sau S1:** 1 tenant demo + 10 NV mẫu
+- BE: 12 models — `branches`, `departments`, `positions`, `levels`, `employees`, `employee_positions`, `contracts`, `employee_dependents`, `emergency_contacts`, `employee_educations`, `employee_experiences`, `employee_documents`
+- BE: CRUD API + phân quyền (admin/hr full, manager xem cấp dưới, employee xem mình)
+- BE: Auto gen mã NV `{prefix}{NNN}` (FPT001) trong transaction lock
+- BE: API "Cấp tài khoản đăng nhập" — tạo user + link `employees.userId` (nullable) sau khi đã có employee
+- FE: Sidebar dọc trái, nhóm collapsible ("Tổ chức", "Nhân sự")
+- FE: Trang list + form CRUD cho chi nhánh, phòng ban, chức danh, cấp bậc, nhân viên
+- FE: Employee list — filter đầy đủ (search tên/code, phòng ban, chi nhánh, trạng thái) + pagination
+- FE: Employee detail dạng tabs — Thông tin | Vị trí | Hợp đồng | Người phụ thuộc | Liên hệ khẩn cấp | Học vấn | Kinh nghiệm | Tài liệu
+- Seed sau S1: 1 tenant demo + 10 NV mẫu
 
-**Done khi:** Tạo được 1 phòng ban, 1 chức danh, add 1 nhân viên đầy đủ thông tin.
+**Design decisions (chốt):**
+- **Employee code:** `{prefix}{NNN}` — FPT001, FPT002 (không có year, gen trong transaction lock)
+- **`employees.identityNumber` (CCCD)** unique per tenant — chống trùng CCCD trong 1 công ty
+- **`employees.userId` nullable** — mặc định NV mới không có tài khoản login. HR bấm "Cấp tài khoản" trên trang chi tiết → hệ thống tạo user + link. Ràng buộc: UNIQUE `employees.userId` (1 user chỉ gắn 1 NV)
+- **`employee_documents.fileUrl`** = string thuần trong S1 (paste URL) — upload thật làm mini-sprint sau
+- **Storage backend chốt: Cloudflare R2** (S3-compatible, zero egress fee) — setup ở mini-sprint "R2 integration" sau S1
+- **Emergency contacts:** bảng riêng `emergency_contacts` (không gộp với `employee_dependents` do khác semantics)
+- **Sidebar UI:** dọc trái, nhóm collapsible
+- **Employee list:** full filter (search + department + branch + status)
+- **Employee detail:** dạng tabs
+
+**Done khi:** Tạo được 1 phòng ban + 1 chức danh + 1 chi nhánh, add 1 nhân viên đầy đủ thông tin qua UI, cấp tài khoản login cho NV được, filter/search employee list hoạt động.
 
 ### Sprint 2 — Attendance + Leave
 **Deliverables:**
@@ -240,13 +256,13 @@ protectedRoute (verify JWT)
 
 - **Billing/subscription:** hiện chưa có, tenant trial 14 ngày rồi để tự expire. Cần khi go live.
 - **Email service:** hiện chưa gửi email — reset password, invite, notification qua email. Chưa quyết dùng SendGrid/Resend/SES.
-- **File upload storage:** hồ sơ NV có CV, ảnh CCCD… Chưa quyết local disk / S3 / Cloudinary. (Path convention đã chốt: `uploads/{companyId}/{module}/...` — chỉ chờ chốt storage backend.)
+- **File upload:** Storage backend đã chốt **Cloudflare R2** (S3-compatible, zero egress fee). Path convention: `uploads/{companyId}/{module}/...`. Chưa build — làm mini-sprint "R2 integration" sau Sprint 1 (cài `@aws-sdk/client-s3`, config `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME` trong .env).
 - **Test framework:** chưa có. Khi cần: BE Supertest, FE Vitest. RLS integration test (Sprint 4) chắc chắn cần → có thể là lý do bắt buộc setup Supertest.
 
 ---
 
 ## 9. Trạng thái hiện tại
 
-- ✅ Base FE (Vite + React 19 + Tailwind v4 + shadcn primitives + auth store + login/signup page)
-- ✅ Base BE (Express 5 + Sequelize + PostgreSQL + JWT + Session + User model đơn giản)
-- ⏭️ **Next: Sprint 0** — Multi-tenant foundation
+- ✅ Base FE + BE + DB PostgreSQL sync xong
+- ✅ **Sprint 0 done** — Multi-tenant foundation (companies, users, sessions, auth flow signup-tenant/signin/signout/refresh, super_admin seed, FE routing `/:companyCode/*`, TenantGuard/SuperAdminGuard/RootRedirect, TenantLayout/SuperAdminLayout, tested E2E)
+- ⏭️ **Next: Sprint 1** — Organization + Employee (12 bảng). Chi tiết schema xem [DB_SCHEMA.md](DB_SCHEMA.md).
