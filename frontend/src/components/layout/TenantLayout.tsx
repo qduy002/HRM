@@ -1,8 +1,10 @@
 import { Outlet } from "react-router";
 import { LogOut, Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { useThemeStore } from "@/stores/useThemeStore";
+import Sidebar from "./Sidebar";
 
 const roleLabels: Record<string, string> = {
   admin: "Quản trị viên",
@@ -17,21 +19,31 @@ const statusLabels: Record<string, string> = {
   suspended: "Tạm khóa",
 };
 
+const statusVariant: Record<string, "warning" | "success" | "destructive" | "outline"> = {
+  trial: "warning",
+  active: "success",
+  suspended: "destructive",
+};
+
 const TenantLayout = () => {
   const { user, company, signOut } = useAuthStore();
   const { isDark, toggleTheme } = useThemeStore();
 
   return (
-    <div className="min-h-screen bg-muted/30">
-      <header className="border-b bg-background">
-        <div className="container flex h-16 items-center justify-between">
+    <div className="flex min-h-screen bg-muted/30">
+      <Sidebar />
+      <div className="flex-1 flex flex-col min-w-0">
+        <header className="h-16 border-b bg-background flex items-center justify-between px-6">
           <div className="flex items-center gap-3">
             <div>
-              <h1 className="text-lg font-bold">{company?.name}</h1>
-              <p className="text-xs text-muted-foreground">
-                {company?.code} · {statusLabels[company?.status ?? ""] ?? company?.status}
-              </p>
+              <h2 className="font-semibold">{company?.name}</h2>
+              <p className="text-xs text-muted-foreground">{company?.code}</p>
             </div>
+            {company?.status && (
+              <Badge variant={statusVariant[company.status] ?? "outline"}>
+                {statusLabels[company.status] ?? company.status}
+              </Badge>
+            )}
           </div>
           <div className="flex items-center gap-3">
             <div className="text-right">
@@ -48,11 +60,11 @@ const TenantLayout = () => {
               Đăng xuất
             </Button>
           </div>
-        </div>
-      </header>
-      <main className="container py-8">
-        <Outlet />
-      </main>
+        </header>
+        <main className="flex-1 p-6 overflow-auto">
+          <Outlet />
+        </main>
+      </div>
     </div>
   );
 };

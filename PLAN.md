@@ -182,6 +182,28 @@ protectedRoute (verify JWT)
 
 **Done khi:** Tạo được 1 phòng ban + 1 chức danh + 1 chi nhánh, add 1 nhân viên đầy đủ thông tin qua UI, cấp tài khoản login cho NV được, filter/search employee list hoạt động.
 
+**Sprint 1 polish backlog** (làm cuối Sprint 1 sau khi Batch D xong):
+
+*Bug cần kiểm tra lại:*
+- Checkbox `<input type="checkbox">` binding khi mở edit form (4 pages org) — verify reflect đúng giá trị đã lưu
+- Nested dialogs: mở edit form + bấm xóa từ dropdown khi đang mở → check có glitch không
+- Native `<select>` trong dark mode — CSS bg-background hoặc chuyển Radix Select (cần cài `@radix-ui/react-select`)
+
+*Features còn thiếu:*
+- Chọn Manager cho Branch/Department (dropdown employees) — cần Employee UI xong trước
+- Search box trong list (client-side, debounce 300ms)
+- Sort by column header
+- Pagination client-side (nếu >50 rows/page)
+- Toggle active/inactive nhanh từ table row (không cần mở form)
+- Bulk delete (checkbox chọn nhiều + toolbar xóa đã chọn)
+
+*Design polish:*
+- Dashboard trang chủ hiển thị số liệu thật (fetch org counts)
+- Sidebar collapse mode (icon-only, useState toggle)
+- Breadcrumb trên header (Tổ chức > Chi nhánh > Chi tiết)
+- Toast undo 5s sau delete
+- Wrap Shadcn Switch component thay `<input type="checkbox">`
+
 ### Sprint 2 — Attendance + Leave
 **Deliverables:**
 - BE: models `shifts`, `work_schedules`, `attendances`, `leave_types`, `leave_balances`, `leave_requests`
@@ -265,4 +287,9 @@ protectedRoute (verify JWT)
 
 - ✅ Base FE + BE + DB PostgreSQL sync xong
 - ✅ **Sprint 0 done** — Multi-tenant foundation (companies, users, sessions, auth flow signup-tenant/signin/signout/refresh, super_admin seed, FE routing `/:companyCode/*`, TenantGuard/SuperAdminGuard/RootRedirect, TenantLayout/SuperAdminLayout, tested E2E)
-- ⏭️ **Next: Sprint 1** — Organization + Employee (12 bảng). Chi tiết schema xem [DB_SCHEMA.md](DB_SCHEMA.md).
+- ✅ **Sprint 1 Batch A** — Backend Organization (4 models + CRUD + verify E2E)
+- ✅ **Sprint 1 Batch B** — Backend Employee (8 models + 7 controllers + code auto-gen + grant-account + change-position + verify E2E)
+- ✅ **Sprint 1 Batch C** — FE Organization (sidebar collapsible + 4 CRUD pages với EmptyState + TableSkeleton + dirty-guard + department tree view)
+- ✅ Bug fixes: F5 race condition access token, axios interceptor retry 401
+- ✅ Seed data mẫu: 16 branches, 28 departments (3-cấp tree), 24 positions, 10 levels — script `npm run seed:org`
+- ⏭️ **Next: Sprint 1 Batch D** — FE Employee (list filter + detail tabs + grant account modal + change position). Sau đó Sprint 1 polish backlog. Schema xem [DB_SCHEMA.md](DB_SCHEMA.md).

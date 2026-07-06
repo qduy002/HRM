@@ -33,7 +33,8 @@ api.interceptors.response.use(
 
     originalRequest._retryCount = originalRequest._retryCount || 0;
 
-    if (error.response?.status === 403 && originalRequest._retryCount < 4) {
+    const status = error.response?.status;
+    if ((status === 401 || status === 403) && originalRequest._retryCount < 4) {
       originalRequest._retryCount += 1;
 
       try {
