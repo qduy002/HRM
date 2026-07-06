@@ -10,6 +10,8 @@ import BranchesPage from './pages/org/BranchesPage';
 import DepartmentsPage from './pages/org/DepartmentsPage';
 import PositionsPage from './pages/org/PositionsPage';
 import LevelsPage from './pages/org/LevelsPage';
+import EmployeesPage from './pages/hr/EmployeesPage';
+import EmployeeDetailPage from './pages/hr/EmployeeDetailPage';
 
 import RootRedirect from './components/auth/RootRedirect';
 import TenantGuard from './components/auth/TenantGuard';
@@ -69,6 +71,8 @@ function App() {
               <Route path="departments" element={<DepartmentsPage />} />
               <Route path="positions" element={<PositionsPage />} />
               <Route path="levels" element={<LevelsPage />} />
+              <Route path="employees" element={<EmployeesPage />} />
+              <Route path="employees/:employeeId" element={<EmployeeDetailPage />} />
             </Route>
           </Route>
 

@@ -290,6 +290,14 @@ protectedRoute (verify JWT)
 - ✅ **Sprint 1 Batch A** — Backend Organization (4 models + CRUD + verify E2E)
 - ✅ **Sprint 1 Batch B** — Backend Employee (8 models + 7 controllers + code auto-gen + grant-account + change-position + verify E2E)
 - ✅ **Sprint 1 Batch C** — FE Organization (sidebar collapsible + 4 CRUD pages với EmptyState + TableSkeleton + dirty-guard + department tree view)
+- ✅ **Sprint 1 Batch D** — FE Employee (list + filter + pagination + 8 tabs detail + grant account + change position + all 6 sub-resources)
 - ✅ Bug fixes: F5 race condition access token, axios interceptor retry 401
 - ✅ Seed data mẫu: 16 branches, 28 departments (3-cấp tree), 24 positions, 10 levels — script `npm run seed:org`
-- ⏭️ **Next: Sprint 1 Batch D** — FE Employee (list filter + detail tabs + grant account modal + change position). Sau đó Sprint 1 polish backlog. Schema xem [DB_SCHEMA.md](DB_SCHEMA.md).
+
+**Roadmap tiếp theo (đã chốt sau khi Batch D xong):**
+1. ⏭️ **Sprint 1.5 — Dashboard real numbers** (~30 phút) — thay số 0 hardcode trong DashboardPage bằng count thực từ stores (NV, chi nhánh, phòng ban, chức danh)
+2. ⏭️ **Sprint 1.6 — Mini-sprint Cloudflare R2** (upload thật) — cài `@aws-sdk/client-s3`, đổi ô Link PDF/URL thành nút chọn file, path convention `uploads/{companyId}/employees/{employeeId}/...`. Cần user cung cấp: `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`.
+3. ⏭️ **Sprint 2 — Attendance + Leave** — theo plan §6
+4. **Sprint 1 polish backlog** (14 mục đã lưu ở §6 Sprint 1) — để cuối Sprint 3 làm 1 đợt trước khi go-live, không làm sớm.
+
+Schema xem [DB_SCHEMA.md](DB_SCHEMA.md).
