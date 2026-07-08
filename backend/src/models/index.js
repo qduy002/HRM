@@ -18,6 +18,10 @@ import EmployeeDocument from './EmployeeDocument.js';
 import Shift from './Shift.js';
 import WorkSchedule from './WorkSchedule.js';
 import Attendance from './Attendance.js';
+// Sprint 2: Leave
+import LeaveType from './LeaveType.js';
+import LeaveBalance from './LeaveBalance.js';
+import LeaveRequest from './LeaveRequest.js';
 
 export {
     Company,
@@ -38,4 +42,7 @@ export {
     Shift,
     WorkSchedule,
     Attendance,
+    LeaveType,
+    LeaveBalance,
+    LeaveRequest,
 };

@@ -17,6 +17,9 @@ import uploadRoute from './routes/uploadRoute.js';
 import shiftRoute from './routes/shiftRoute.js';
 import workScheduleRoute from './routes/workScheduleRoute.js';
 import attendanceRoute from './routes/attendanceRoute.js';
+import leaveTypeRoute from './routes/leaveTypeRoute.js';
+import leaveBalanceRoute from './routes/leaveBalanceRoute.js';
+import leaveRequestRoute from './routes/leaveRequestRoute.js';
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -57,6 +60,9 @@ app.use('/api/uploads', protectedRoute, tenantMiddleware, uploadRoute);
 app.use('/api/shifts', protectedRoute, tenantMiddleware, shiftRoute);
 app.use('/api/work-schedules', protectedRoute, tenantMiddleware, workScheduleRoute);
 app.use('/api/attendances', protectedRoute, tenantMiddleware, attendanceRoute);
+app.use('/api/leave-types', protectedRoute, tenantMiddleware, leaveTypeRoute);
+app.use('/api/leave-balances', protectedRoute, tenantMiddleware, leaveBalanceRoute);
+app.use('/api/leave-requests', protectedRoute, tenantMiddleware, leaveRequestRoute);
 
 connectDB().then(() => {
     app.listen(PORT, () => {

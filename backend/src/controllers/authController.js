@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import sequelize from '../libs/db.js';
 import { Company, User, Session } from '../models/index.js';
+import { seedDefaultLeaveTypes } from '../utils/leave.js';
 
 const ACCESS_TOKEN_TTL = '30m';
 const REFRESH_TOKEN_TTL_MS = 14 * 24 * 60 * 60 * 1000;
@@ -112,6 +113,9 @@ export const signupTenant = async (req, res) => {
             },
             { transaction: t }
         );
+
+        // Auto seed 6 loại phép chuẩn VN
+        await seedDefaultLeaveTypes(company.id, t);
 
         await t.commit();
 
