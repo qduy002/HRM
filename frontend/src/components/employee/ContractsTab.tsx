@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
-import { FileText, MoreHorizontal, Pencil, Plus, Trash2 } from "lucide-react";
+import { ExternalLink, FileText, MoreHorizontal, Paperclip, Pencil, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -27,7 +27,9 @@ import {
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { EmptyState } from "@/components/ui/empty-state";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
+import { FileUpload } from "@/components/ui/file-upload";
 import { contractService } from "@/services/contractService";
+import { openFileByReference, uploadService } from "@/services/uploadService";
 import type { Contract, ContractStatus, ContractType } from "@/types/employee";
 
 const TYPE_LABELS: Record<ContractType, string> = {
@@ -81,11 +83,13 @@ export const ContractsTab = ({ employeeId }: Props) => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Contract | null>(null);
   const [toDelete, setToDelete] = useState<Contract | null>(null);
+  const [opening, setOpening] = useState<number | null>(null);
 
   const {
     register,
     handleSubmit,
     reset,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({ resolver: zodResolver(schema) });
 
@@ -166,10 +170,31 @@ export const ContractsTab = ({ employeeId }: Props) => {
     }
   };
 
+  const handleOpen = async (contract: Contract) => {
+    if (!contract.fileUrl) return;
+    try {
+      setOpening(contract.id);
+      // Đặt tên tải xuống theo mã HĐ + đuôi từ key R2
+      const extMatch = contract.fileUrl.match(/\.([a-z0-9]{2,5})$/i);
+      const ext = extMatch ? extMatch[1] : "pdf";
+      const safeName = contract.code.replace(/[/\\]/g, "-");
+      const filename = `HD-${safeName}.${ext}`;
+      await openFileByReference(contract.fileUrl, { filename });
+    } catch {
+      toast.error("Không mở được file");
+    } finally {
+      setOpening(null);
+    }
+  };
+
   const confirmDelete = async () => {
     if (!toDelete) return;
     try {
+      const key = toDelete.fileUrl;
       await contractService.delete(employeeId, toDelete.id);
+      if (key && !key.startsWith("http")) {
+        uploadService.delete(key).catch(() => {});
+      }
       toast.success("Xóa HĐ thành công");
       setToDelete(null);
       load();
@@ -219,11 +244,12 @@ export const ContractsTab = ({ employeeId }: Props) => {
                 <TableHead>Hiệu lực</TableHead>
                 <TableHead>Lương cơ bản</TableHead>
                 <TableHead>Trạng thái</TableHead>
+                <TableHead className="w-16 text-center">PDF</TableHead>
                 <TableHead className="w-12"></TableHead>
               </TableRow>
             </TableHeader>
             {loading ? (
-              <TableSkeleton cols={7} />
+              <TableSkeleton cols={8} />
             ) : (
               <TableBody>
                 {items.map((c) => (
@@ -238,6 +264,21 @@ export const ContractsTab = ({ employeeId }: Props) => {
                     <TableCell>
                       <Badge variant={STATUS_VARIANT[c.status]}>{STATUS_LABELS[c.status]}</Badge>
                     </TableCell>
+                    <TableCell className="text-center">
+                      {c.fileUrl ? (
+                        <button
+                          onClick={() => handleOpen(c)}
+                          disabled={opening === c.id}
+                          className="text-primary hover:underline inline-flex items-center gap-1 text-sm disabled:opacity-50"
+                          title="Mở PDF hợp đồng"
+                        >
+                          <Paperclip className="h-4 w-4" />
+                          {opening === c.id ? "..." : ""}
+                        </button>
+                      ) : (
+                        <span className="text-muted-foreground text-xs">—</span>
+                      )}
+                    </TableCell>
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -246,6 +287,11 @@ export const ContractsTab = ({ employeeId }: Props) => {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
+                          {c.fileUrl && (
+                            <DropdownMenuItem onSelect={() => handleOpen(c)}>
+                              <ExternalLink className="h-4 w-4" /> Mở PDF
+                            </DropdownMenuItem>
+                          )}
                           <DropdownMenuItem onSelect={() => openEdit(c)}>
                             <Pencil className="h-4 w-4" /> Sửa
                           </DropdownMenuItem>
@@ -351,8 +397,19 @@ export const ContractsTab = ({ employeeId }: Props) => {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="fileUrl">Link PDF hợp đồng</Label>
-                <Input id="fileUrl" {...register("fileUrl")} placeholder="https://..." />
+                <Label>PDF hợp đồng scan</Label>
+                <Controller
+                  control={control}
+                  name="fileUrl"
+                  render={({ field }) => (
+                    <FileUpload
+                      value={field.value}
+                      onChange={(key) => field.onChange(key)}
+                      module="contracts"
+                      accept=".pdf,.jpg,.jpeg,.png"
+                    />
+                  )}
+                />
               </div>
             </div>
             <div className="space-y-2">

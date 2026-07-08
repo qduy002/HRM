@@ -13,6 +13,7 @@ import departmentRoute from './routes/departmentRoute.js';
 import positionRoute from './routes/positionRoute.js';
 import levelRoute from './routes/levelRoute.js';
 import employeeRoute from './routes/employeeRoute.js';
+import uploadRoute from './routes/uploadRoute.js';
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -49,6 +50,7 @@ app.use('/api/departments', protectedRoute, tenantMiddleware, departmentRoute);
 app.use('/api/positions', protectedRoute, tenantMiddleware, positionRoute);
 app.use('/api/levels', protectedRoute, tenantMiddleware, levelRoute);
 app.use('/api/employees', protectedRoute, tenantMiddleware, employeeRoute);
+app.use('/api/uploads', protectedRoute, tenantMiddleware, uploadRoute);
 
 connectDB().then(() => {
     app.listen(PORT, () => {
