@@ -355,15 +355,90 @@ Mọi bảng có `companyId INT NOT NULL FK → companies.id CASCADE`.
 
 ## 6. Sprint 2/3/4 tables — sẽ chi tiết khi tới
 
-### 6.1 Attendance ⚪ (Sprint 2)
-- **`shifts`** — ca làm việc (start, end, break minutes)
-- **`work_schedules`** — lịch làm (NV × ngày × shift)
-- **`attendances`** — chấm công (NV × ngày, checkIn, checkOut, hoursWorked, otHours, status)
+### 6.1 Attendance 🟡 (Sprint 2 — đang design)
 
-### 6.2 Leave ⚪ (Sprint 2)
-- **`leave_types`** — loại phép (annual/sick/maternity/unpaid)
-- **`leave_balances`** — số phép còn (NV × loại × năm)
-- **`leave_requests`** — đơn xin nghỉ (workflow duyệt)
+**`shifts`** — Ca làm việc
+| Cột | Kiểu | Mô tả |
+|---|---|---|
+| id, companyId | | |
+| code | VARCHAR(20) | MORNING, EVENING, NIGHT |
+| name | VARCHAR(100) | Ca sáng, Ca tối |
+| startTime | TIME | 08:00 |
+| endTime | TIME | 17:30 |
+| breakMinutes | INT | 60 (nghỉ trưa) |
+| isActive | BOOLEAN | |
+
+**`work_schedules`** — Lịch làm việc gán NV
+| Cột | Kiểu | Mô tả |
+|---|---|---|
+| id, companyId, employeeId, shiftId | | |
+| effectiveFrom | DATE | |
+| effectiveTo | DATE nullable | NULL = còn hiệu lực |
+
+**`attendances`** — Chấm công
+| Cột | Kiểu | Mô tả |
+|---|---|---|
+| id, companyId, employeeId | | |
+| date | DATE | Composite unique `(companyId, employeeId, date)` |
+| checkInAt / checkOutAt | TIMESTAMP nullable | |
+| hoursWorked | DECIMAL(5,2) | Auto tính |
+| otHours | DECIMAL(5,2) | Giờ vượt shift.endTime + tolerance 15p |
+| status | VARCHAR(20) | `on_time` \| `late` \| `early_leave` \| `absent` \| `on_leave` \| `holiday` |
+| lateMinutes, earlyMinutes | INT | |
+| checkInIp | VARCHAR(45) | Audit |
+| note | TEXT | |
+
+### 6.2 Leave 🟡 (Sprint 2 — đang design)
+
+**`leave_types`** — Loại phép
+| Cột | Kiểu | Mô tả |
+|---|---|---|
+| id, companyId | | |
+| code | VARCHAR(20) | ANNUAL, SICK, MATERNITY, MARRIAGE, BEREAVEMENT, UNPAID |
+| name | VARCHAR(100) | Nghỉ phép năm... |
+| daysPerYear | DECIMAL(4,1) nullable | 12 với annual, NULL = unlimited |
+| isPaid | BOOLEAN | |
+| requiresApproval | BOOLEAN | |
+| color | VARCHAR(20) | Cho calendar view |
+| isActive | BOOLEAN | |
+
+**Auto seed 6 loại khi tạo tenant** — trong `authController.signupTenant` transaction.
+
+**`leave_balances`** — Số phép còn lại
+| Cột | Kiểu | Mô tả |
+|---|---|---|
+| id, companyId, employeeId, leaveTypeId | | |
+| year | INT | 2026 |
+| allocatedDays | DECIMAL(5,1) | Số cấp đầu năm |
+| usedDays | DECIMAL(5,1) | Đã dùng |
+| carriedOverDays | DECIMAL(5,1) default 0 | Carry over từ năm trước |
+
+Composite unique `(employeeId, leaveTypeId, year)`.
+
+**`leave_requests`** — Đơn xin nghỉ (workflow 2 stage)
+| Cột | Kiểu | Mô tả |
+|---|---|---|
+| id, companyId, employeeId, leaveTypeId | | |
+| fromDate, toDate | DATE | |
+| halfDay | VARCHAR(20) nullable | NULL/`morning`/`afternoon` — cần fromDate=toDate |
+| days | DECIMAL(4,1) | Auto tính dựa `companies.workingDays` |
+| reason | TEXT | |
+| status | VARCHAR(20) | `pending` \| `manager_approved` \| `approved` \| `rejected` \| `cancelled` |
+| createdBy | INT FK → users.id | Ai submit |
+| managerApprovedBy | INT FK → users.id nullable | |
+| managerApprovedAt | TIMESTAMP nullable | |
+| managerNote | TEXT nullable | |
+| hrApprovedBy | INT FK → users.id nullable | |
+| hrApprovedAt | TIMESTAMP nullable | |
+| hrNote | TEXT nullable | |
+| rejectedBy | INT FK → users.id nullable | Bất kỳ tầng nào reject |
+| rejectedAt | TIMESTAMP nullable | |
+| rejectedReason | TEXT nullable | |
+
+### 6.3 Cập nhật `companies` (Sprint 2)
+Thêm cột `workingDays` JSONB DEFAULT `{"mon":1,"tue":1,"wed":1,"thu":1,"fri":1,"sat":0,"sun":0}`
+- Giá trị: `1` = ngày làm đủ, `0.5` = nửa ngày, `0` = nghỉ
+- Dùng khi tính `leave_requests.days`
 
 ### 6.3 Payroll ⚪ (Sprint 3)
 - **`salary_structures`** — cấu trúc lương versioned (NV × basicSalary × bhxhSalary × effectiveFrom-To)

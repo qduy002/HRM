@@ -14,6 +14,10 @@ import EmergencyContact from './EmergencyContact.js';
 import EmployeeEducation from './EmployeeEducation.js';
 import EmployeeExperience from './EmployeeExperience.js';
 import EmployeeDocument from './EmployeeDocument.js';
+// Sprint 2: Attendance
+import Shift from './Shift.js';
+import WorkSchedule from './WorkSchedule.js';
+import Attendance from './Attendance.js';
 
 export {
     Company,
@@ -31,4 +35,7 @@ export {
     EmployeeEducation,
     EmployeeExperience,
     EmployeeDocument,
+    Shift,
+    WorkSchedule,
+    Attendance,
 };

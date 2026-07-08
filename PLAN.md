@@ -203,17 +203,33 @@ protectedRoute (verify JWT)
 - Breadcrumb trên header (Tổ chức > Chi nhánh > Chi tiết)
 - Toast undo 5s sau delete
 - Wrap Shadcn Switch component thay `<input type="checkbox">`
+- **Check-in mobile GPS + selfie** — nâng cấp attendance từ 1-click browser sang mobile app (Sprint 3+ nếu có budget mobile)
 
 ### Sprint 2 — Attendance + Leave
 **Deliverables:**
-- BE: models `shifts`, `work_schedules`, `attendances`, `leave_types`, `leave_balances`, `leave_requests`
-- BE: API check-in/check-out (employee), duyệt phép (manager/hr)
-- BE: Logic tính hoursWorked, otHours, cập nhật leave_balance
-- FE: Trang chấm công NV (check-in button + lịch sử)
-- FE: Trang xin nghỉ + trang duyệt (manager)
+- BE: 6 models — `shifts`, `work_schedules`, `attendances`, `leave_types`, `leave_balances`, `leave_requests`
+- BE: Thêm cột `companies.workingDays` JSONB (config ngày làm việc per tenant)
+- BE: API check-in/check-out (employee), workflow duyệt phép 2 stage (manager → HR)
+- BE: Logic tính hoursWorked, otHours (auto khi check-out), cập nhật leave_balance
+- BE: Auto seed 6 loại phép chuẩn khi tạo tenant mới (ANNUAL, SICK, MATERNITY, MARRIAGE, BEREAVEMENT, UNPAID)
+- BE: Cron job (hoặc endpoint HR trigger) mark absent cuối ngày
+- FE: Trang chấm công NV (check-in button + lịch sử tháng)
+- FE: Trang xin nghỉ NV (form + lịch sử + hiển thị số phép còn)
+- FE: Trang duyệt phép (Manager) — chỉ thấy NV thuộc phòng ban mình quản lý
+- FE: Trang duyệt phép (HR) — thấy toàn tenant, chỉ những request đã manager approved
 - FE: Bảng chấm công tháng (HR view)
 
-**Done khi:** NV check-in được, xin nghỉ được, manager duyệt được, HR xem báo cáo tháng.
+**Design decisions (chốt):**
+- **Check-in security:** 1-click button, log IP. GPS + selfie mobile app đưa vào backlog Sprint 3+
+- **Attendance auto-status:** cron cuối ngày mark `absent`, tính `hoursWorked/otHours` khi check-out
+- **OT auto:** khi check-out > shift.endTime + tolerance 15 phút
+- **Workflow leave:** 3 stage — Employee submit (`pending`) → Manager approve (`manager_approved`) → HR approve (`approved`). Bất kỳ tầng nào cũng có thể `rejected`.
+- **Manager của NV:** = user (role=manager) là `departments.managerId` của phòng NV đang thuộc
+- **workingDays per tenant:** `companies.workingDays` JSONB `{mon:1,tue:1,wed:1,thu:1,fri:1,sat:0,sun:0}`. Cho phép nửa ngày (0.5 với sat/sun tùy công ty).
+- **Nghỉ nửa ngày:** `leave_requests.halfDay` ENUM `null | morning | afternoon`, cần `fromDate = toDate`
+- **6 loại phép seed:** ANNUAL 12 ngày, SICK unlimited (có giấy BS), MATERNITY 180 ngày, MARRIAGE 3, BEREAVEMENT 3, UNPAID unlimited không lương
+
+**Done khi:** NV check-in được, xin nghỉ được, manager duyệt được, HR duyệt lần 2 được, HR xem báo cáo tháng, workingDays cấu hình được per tenant.
 
 ### Sprint 3 — Payroll VN
 **Deliverables:**

@@ -56,6 +56,14 @@ const Company = sequelize.define('Company', {
         type: DataTypes.STRING(10),
         allowNull: true,
     },
+    // Config ngày làm việc per tenant.
+    // Value: 1 = ngày làm đủ, 0.5 = nửa ngày (thường T7), 0 = nghỉ.
+    // Dùng khi tính leave_requests.days.
+    workingDays: {
+        type: DataTypes.JSONB,
+        allowNull: false,
+        defaultValue: { mon: 1, tue: 1, wed: 1, thu: 1, fri: 1, sat: 0, sun: 0 },
+    },
 }, {
     tableName: 'companies',
     timestamps: true,
