@@ -54,7 +54,7 @@ export interface Level {
 export type BranchPayload = Partial<Pick<Branch, 'code' | 'name' | 'address' | 'phone' | 'email' | 'isActive'>>;
 
 export type DepartmentPayload = Partial<
-  Pick<Department, 'branchId' | 'parentDepartmentId' | 'code' | 'name' | 'description' | 'isActive'>
+  Pick<Department, 'branchId' | 'parentDepartmentId' | 'code' | 'name' | 'description' | 'managerId' | 'isActive'>
 >;
 
 export type PositionPayload = Partial<Pick<Position, 'code' | 'name' | 'description' | 'isActive'>>;

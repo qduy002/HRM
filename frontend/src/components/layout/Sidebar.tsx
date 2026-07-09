@@ -11,6 +11,9 @@ import {
   CalendarClock,
   ClipboardCheck,
   UserCheck,
+  CalendarDays,
+  ClipboardList,
+  Palette,
   ChevronDown,
   ChevronRight,
   type LucideIcon,
@@ -32,6 +35,7 @@ interface NavGroup {
 }
 
 const HR = ["admin", "hr"];
+const MGR_HR = ["admin", "hr", "manager"];
 const ALL_TENANT = ["admin", "hr", "manager", "employee"];
 
 const buildNav = (companyCode: string): { top: NavItem[]; groups: NavGroup[] } => ({
@@ -77,6 +81,36 @@ const buildNav = (companyCode: string): { top: NavItem[]; groups: NavGroup[] } =
         },
       ],
     },
+    {
+      label: "Nghỉ phép",
+      items: [
+        {
+          label: "Đơn phép của tôi",
+          path: `/${companyCode}/my-leaves`,
+          icon: CalendarDays,
+          roles: ALL_TENANT,
+          requiresEmployee: true,
+        },
+        {
+          label: "Đơn chờ duyệt",
+          path: `/${companyCode}/leaves-pending`,
+          icon: ClipboardList,
+          roles: MGR_HR,
+        },
+        {
+          label: "Danh sách đơn phép",
+          path: `/${companyCode}/leaves`,
+          icon: ClipboardList,
+          roles: HR,
+        },
+        {
+          label: "Loại phép",
+          path: `/${companyCode}/leave-types`,
+          icon: Palette,
+          roles: HR,
+        },
+      ],
+    },
   ],
 });
 
@@ -90,6 +124,7 @@ const Sidebar = () => {
     "Tổ chức": true,
     "Nhân sự": true,
     "Chấm công": true,
+    "Nghỉ phép": true,
   });
 
   const toggle = (label: string) =>

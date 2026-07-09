@@ -37,7 +37,9 @@ import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { useDirtyGuard } from "@/hooks/useDirtyGuard";
 import { useDepartmentStore } from "@/stores/useDepartmentStore";
 import { useBranchStore } from "@/stores/useBranchStore";
+import { employeeService } from "@/services/employeeService";
 import type { Department } from "@/types/org";
+import type { Employee } from "@/types/employee";
 
 const schema = z.object({
   branchId: z.number().int().min(1, "Vui lòng chọn chi nhánh"),
@@ -45,6 +47,7 @@ const schema = z.object({
   code: z.string().min(1, "Vui lòng nhập mã phòng ban"),
   name: z.string().min(1, "Vui lòng nhập tên phòng ban"),
   description: z.string().optional(),
+  managerId: z.number().int().nullable().optional(),
   isActive: z.boolean().optional(),
 });
 
@@ -100,6 +103,7 @@ const DepartmentsPage = () => {
   const { items, loading, fetch, create, update, remove } = useDepartmentStore();
   const branches = useBranchStore((s) => s.items);
   const fetchBranches = useBranchStore((s) => s.fetch);
+  const [employees, setEmployees] = useState<Employee[]>([]);
 
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Department | null>(null);
@@ -121,6 +125,8 @@ const DepartmentsPage = () => {
   useEffect(() => {
     fetch();
     if (branches.length === 0) fetchBranches();
+    // Fetch employees (chỉ list, không cần store — dùng cho manager select)
+    employeeService.list({ pageSize: 500 }).then((r) => setEmployees(r.employees)).catch(() => {});
   }, [fetch, fetchBranches, branches.length]);
 
   const tree = useMemo(() => buildTree(items), [items]);
@@ -168,6 +174,7 @@ const DepartmentsPage = () => {
       code: "",
       name: "",
       description: "",
+      managerId: null,
       isActive: true,
     });
     setDialogOpen(true);
@@ -181,6 +188,7 @@ const DepartmentsPage = () => {
       code: d.code,
       name: d.name,
       description: d.description ?? "",
+      managerId: d.managerId ?? null,
       isActive: d.isActive,
     });
     setDialogOpen(true);
@@ -190,6 +198,7 @@ const DepartmentsPage = () => {
     const payload = {
       ...values,
       parentDepartmentId: values.parentDepartmentId ?? null,
+      managerId: values.managerId ?? null,
       description: values.description || undefined,
     };
     const result = editing ? await update(editing.id, payload) : await create(payload);
@@ -407,6 +416,29 @@ const DepartmentsPage = () => {
             <div className="space-y-2">
               <Label htmlFor="description">Mô tả</Label>
               <Textarea id="description" {...register("description")} rows={2} />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="managerId">Trưởng phòng (Manager)</Label>
+              <select
+                id="managerId"
+                {...register("managerId", {
+                  setValueAs: (v) => (v === "" || v == null ? null : Number(v)),
+                })}
+                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
+              >
+                <option value="">— Chưa gán —</option>
+                {employees.map((e) => (
+                  <option key={e.id} value={e.id}>
+                    {e.code} — {e.displayName}
+                    {!e.userId && " (chưa có tài khoản)"}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-muted-foreground">
+                Nhân viên được chọn sẽ duyệt đơn phép tầng manager cho NV thuộc phòng ban này.
+                Cần có tài khoản đăng nhập (đã cấp) mới duyệt được.
+              </p>
             </div>
 
             <div className="flex items-center gap-2">

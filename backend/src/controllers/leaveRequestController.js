@@ -58,7 +58,20 @@ export const listPendingApproval = async (req, res) => {
     try {
         const role = req.user.role;
 
-        if (role === 'hr' || role === 'admin') {
+        // Admin có quyền cao nhất — thấy cả pending (chưa qua manager) và manager_approved (chờ HR)
+        if (role === 'admin') {
+            const items = await LeaveRequest.findAll({
+                where: {
+                    companyId: req.companyId,
+                    status: { [Op.in]: ['pending', 'manager_approved'] },
+                },
+                include: includeRelations,
+                order: [['createdAt', 'ASC']],
+            });
+            return res.status(200).json({ requests: items, stage: 'all' });
+        }
+
+        if (role === 'hr') {
             const items = await LeaveRequest.findAll({
                 where: { companyId: req.companyId, status: 'manager_approved' },
                 include: includeRelations,
@@ -270,6 +283,73 @@ export const hrApprove = async (req, res) => {
     } catch (error) {
         await t.rollback();
         console.error('Lỗi hr-approve:', error);
+        return res.status(500).json({ message: 'Lỗi hệ thống !!!' });
+    }
+};
+
+// POST /api/leave-requests/:id/direct-approve
+// Admin duyệt vượt cấp — bypass workflow, đơn về `approved` ngay,
+// ghi admin làm cả manager approver + HR approver (audit trail rõ ràng admin đã bypass).
+// Kích hoạt balance + attendance update như hrApprove.
+export const directApprove = async (req, res) => {
+    const t = await sequelize.transaction();
+    try {
+        const request = await LeaveRequest.findOne({
+            where: { id: req.params.id, ...scopeToCompany(req) },
+            transaction: t,
+        });
+        if (!request) {
+            await t.rollback();
+            return res.status(404).json({ message: 'Không tìm thấy đơn' });
+        }
+        if (!['pending', 'manager_approved'].includes(request.status)) {
+            await t.rollback();
+            return res.status(400).json({
+                message: `Đơn ở trạng thái ${request.status}, không thể duyệt vượt cấp`,
+            });
+        }
+
+        const now = new Date();
+        const note = req.body.note || 'Admin duyệt vượt cấp';
+
+        // Ghi cả 2 tầng approver là admin (audit rõ ràng đã bypass workflow)
+        await request.update(
+            {
+                status: 'approved',
+                managerApprovedBy: request.managerApprovedBy ?? req.user.id,
+                managerApprovedAt: request.managerApprovedAt ?? now,
+                managerNote: request.managerNote ?? note,
+                hrApprovedBy: req.user.id,
+                hrApprovedAt: now,
+                hrNote: note,
+            },
+            { transaction: t },
+        );
+
+        // Update balance nếu leaveType có giới hạn
+        const leaveType = await LeaveType.findByPk(request.leaveTypeId, { transaction: t });
+        if (leaveType?.daysPerYear != null) {
+            const year = new Date(request.fromDate).getFullYear();
+            const balance = await getOrCreateBalance(
+                req.companyId,
+                request.employeeId,
+                request.leaveTypeId,
+                year,
+                t,
+            );
+            await balance.increment({ usedDays: Number(request.days) }, { transaction: t });
+        }
+
+        // Update attendances thành 'on_leave'
+        const workingDays = await getCompanyWorkingDays(req.companyId);
+        const dates = getWorkingDatesInRange(request.fromDate, request.toDate, workingDays);
+        await applyLeaveToAttendances(req.companyId, request.employeeId, dates, t);
+
+        await t.commit();
+        return res.status(200).json({ request, message: 'Duyệt vượt cấp thành công. Đơn có hiệu lực.' });
+    } catch (error) {
+        await t.rollback();
+        console.error('Lỗi direct-approve:', error);
         return res.status(500).json({ message: 'Lỗi hệ thống !!!' });
     }
 };

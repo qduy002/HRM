@@ -6,6 +6,7 @@ import {
     createRequest,
     managerApprove,
     hrApprove,
+    directApprove,
     reject,
     cancel,
 } from '../controllers/leaveRequestController.js';
@@ -22,5 +23,6 @@ router.post('/:id/cancel', cancel);
 router.post('/:id/reject', reject);
 router.post('/:id/manager-approve', requireRole('admin', 'manager'), managerApprove);
 router.post('/:id/hr-approve', requireRole('admin', 'hr'), hrApprove);
+router.post('/:id/direct-approve', requireRole('admin'), directApprove);
 
 export default router;

@@ -16,6 +16,10 @@ import MyAttendancePage from './pages/attendance/MyAttendancePage';
 import ShiftsPage from './pages/attendance/ShiftsPage';
 import WorkSchedulesPage from './pages/attendance/WorkSchedulesPage';
 import AttendanceReportPage from './pages/attendance/AttendanceReportPage';
+import MyLeavePage from './pages/leave/MyLeavePage';
+import PendingApprovalPage from './pages/leave/PendingApprovalPage';
+import LeaveOverviewPage from './pages/leave/LeaveOverviewPage';
+import LeaveTypesPage from './pages/leave/LeaveTypesPage';
 
 import RootRedirect from './components/auth/RootRedirect';
 import TenantGuard from './components/auth/TenantGuard';
@@ -81,6 +85,10 @@ function App() {
               <Route path="shifts" element={<ShiftsPage />} />
               <Route path="work-schedules" element={<WorkSchedulesPage />} />
               <Route path="attendance-report" element={<AttendanceReportPage />} />
+              <Route path="my-leaves" element={<MyLeavePage />} />
+              <Route path="leaves-pending" element={<PendingApprovalPage />} />
+              <Route path="leaves" element={<LeaveOverviewPage />} />
+              <Route path="leave-types" element={<LeaveTypesPage />} />
             </Route>
           </Route>
 

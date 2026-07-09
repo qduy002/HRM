@@ -435,6 +435,13 @@ Composite unique `(employeeId, leaveTypeId, year)`.
 | rejectedAt | TIMESTAMP nullable | |
 | rejectedReason | TEXT nullable | |
 
+**Workflow endpoints:**
+- `POST /leave-requests/:id/manager-approve` — Manager (hoặc admin) duyệt tầng 1: `pending` → `manager_approved`
+- `POST /leave-requests/:id/hr-approve` — HR (hoặc admin) duyệt tầng 2: `manager_approved` → `approved`
+- `POST /leave-requests/:id/direct-approve` — **Admin duyệt vượt cấp**: từ `pending` hoặc `manager_approved` → `approved` trực tiếp, cả 2 approver fields ghi admin (audit trail rõ đã bypass)
+- `POST /leave-requests/:id/reject` — Manager/HR/admin đều reject được
+- `POST /leave-requests/:id/cancel` — Owner tự hủy (chỉ khi status ∈ pending/manager_approved)
+
 ### 6.3 Cập nhật `companies` (Sprint 2)
 Thêm cột `workingDays` JSONB DEFAULT `{"mon":1,"tue":1,"wed":1,"thu":1,"fri":1,"sat":0,"sun":0}`
 - Giá trị: `1` = ngày làm đủ, `0.5` = nửa ngày, `0` = nghỉ

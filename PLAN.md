@@ -224,6 +224,7 @@ protectedRoute (verify JWT)
 - **Attendance auto-status:** cron cuối ngày mark `absent`, tính `hoursWorked/otHours` khi check-out
 - **OT auto:** khi check-out > shift.endTime + tolerance 15 phút
 - **Workflow leave:** 3 stage — Employee submit (`pending`) → Manager approve (`manager_approved`) → HR approve (`approved`). Bất kỳ tầng nào cũng có thể `rejected`.
+- **Admin override (Duyệt vượt cấp):** Chuẩn industry (BASE.vn, MISA AMIS, BambooHR đều có) — chỉ admin thấy thêm nút **"Duyệt trực tiếp"** bên cạnh "Duyệt". Bấm 1 click → đơn về `approved` ngay, bypass cả 2 tầng. Cả `managerApprovedBy` và `hrApprovedBy` đều ghi admin (audit trail rõ). Endpoint `POST /leave-requests/:id/direct-approve` (chỉ role=admin). Nút "Duyệt" thường vẫn theo workflow đúng tầng.
 - **Manager của NV:** = user (role=manager) là `departments.managerId` của phòng NV đang thuộc
 - **workingDays per tenant:** `companies.workingDays` JSONB `{mon:1,tue:1,wed:1,thu:1,fri:1,sat:0,sun:0}`. Cho phép nửa ngày (0.5 với sat/sun tùy công ty).
 - **Nghỉ nửa ngày:** `leave_requests.halfDay` ENUM `null | morning | afternoon`, cần `fromDate = toDate`
