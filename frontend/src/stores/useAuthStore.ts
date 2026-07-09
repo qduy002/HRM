@@ -10,6 +10,7 @@ export const useAuthStore = create<AuthState>()(
       accessToken: null,
       user: null,
       company: null,
+      hasEmployee: false,
       loading: false,
 
       setAccessToken: (accessToken) => set({ accessToken }),
@@ -17,7 +18,7 @@ export const useAuthStore = create<AuthState>()(
       setCompany: (company) => set({ company }),
 
       clearState: () => {
-        set({ accessToken: null, user: null, company: null, loading: false });
+        set({ accessToken: null, user: null, company: null, hasEmployee: false, loading: false });
         localStorage.clear();
         sessionStorage.clear();
       },
@@ -76,11 +77,11 @@ export const useAuthStore = create<AuthState>()(
       fetchMe: async () => {
         try {
           set({ loading: true });
-          const { user, company } = await authService.fetchMe();
-          set({ user, company });
+          const { user, company, hasEmployee } = await authService.fetchMe();
+          set({ user, company, hasEmployee: !!hasEmployee });
         } catch (error) {
           console.error(error);
-          set({ user: null, company: null, accessToken: null });
+          set({ user: null, company: null, hasEmployee: false, accessToken: null });
         } finally {
           set({ loading: false });
         }
@@ -102,7 +103,7 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: "auth-storage",
-      partialize: (state) => ({ user: state.user, company: state.company }),
+      partialize: (state) => ({ user: state.user, company: state.company, hasEmployee: state.hasEmployee }),
     }
   )
 );

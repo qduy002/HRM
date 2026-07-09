@@ -47,6 +47,7 @@ export interface AuthState {
   accessToken: string | null;
   user: User | null;
   company: Company | null;
+  hasEmployee: boolean;
   loading: boolean;
 
   setAccessToken: (accessToken: string | null) => void;

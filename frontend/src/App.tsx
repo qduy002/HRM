@@ -12,6 +12,10 @@ import PositionsPage from './pages/org/PositionsPage';
 import LevelsPage from './pages/org/LevelsPage';
 import EmployeesPage from './pages/hr/EmployeesPage';
 import EmployeeDetailPage from './pages/hr/EmployeeDetailPage';
+import MyAttendancePage from './pages/attendance/MyAttendancePage';
+import ShiftsPage from './pages/attendance/ShiftsPage';
+import WorkSchedulesPage from './pages/attendance/WorkSchedulesPage';
+import AttendanceReportPage from './pages/attendance/AttendanceReportPage';
 
 import RootRedirect from './components/auth/RootRedirect';
 import TenantGuard from './components/auth/TenantGuard';
@@ -73,6 +77,10 @@ function App() {
               <Route path="levels" element={<LevelsPage />} />
               <Route path="employees" element={<EmployeesPage />} />
               <Route path="employees/:employeeId" element={<EmployeeDetailPage />} />
+              <Route path="my-attendance" element={<MyAttendancePage />} />
+              <Route path="shifts" element={<ShiftsPage />} />
+              <Route path="work-schedules" element={<WorkSchedulesPage />} />
+              <Route path="attendance-report" element={<AttendanceReportPage />} />
             </Route>
           </Route>
 
