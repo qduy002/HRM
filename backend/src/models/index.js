@@ -30,6 +30,9 @@ import PersonalDeductionRate from './PersonalDeductionRate.js';
 import SalaryStructure from './SalaryStructure.js';
 import Allowance from './Allowance.js';
 import EmployeeAllowance from './EmployeeAllowance.js';
+// Sprint 3: Payroll runtime
+import Payroll from './Payroll.js';
+import PayrollItem from './PayrollItem.js';
 
 export {
     Company,
@@ -59,4 +62,6 @@ export {
     SalaryStructure,
     Allowance,
     EmployeeAllowance,
+    Payroll,
+    PayrollItem,
 };

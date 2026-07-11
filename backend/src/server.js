@@ -24,6 +24,7 @@ import payrollRefRoute from './routes/payrollRefRoute.js';
 import salaryStructureRoute from './routes/salaryStructureRoute.js';
 import allowanceRoute from './routes/allowanceRoute.js';
 import employeeAllowanceRoute from './routes/employeeAllowanceRoute.js';
+import payrollRoute from './routes/payrollRoute.js';
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -73,6 +74,7 @@ app.use('/api', protectedRoute, tenantMiddleware, payrollRefRoute);
 app.use('/api/salary-structures', protectedRoute, tenantMiddleware, salaryStructureRoute);
 app.use('/api/allowances', protectedRoute, tenantMiddleware, allowanceRoute);
 app.use('/api/employee-allowances', protectedRoute, tenantMiddleware, employeeAllowanceRoute);
+app.use('/api/payrolls', protectedRoute, tenantMiddleware, payrollRoute);
 
 connectDB().then(() => {
     app.listen(PORT, () => {
