@@ -14,6 +14,9 @@ import {
   CalendarDays,
   ClipboardList,
   Palette,
+  Wallet,
+  UserCog,
+  ScrollText,
   ChevronDown,
   ChevronRight,
   type LucideIcon,
@@ -111,6 +114,14 @@ const buildNav = (companyCode: string): { top: NavItem[]; groups: NavGroup[] } =
         },
       ],
     },
+    {
+      label: "Lương",
+      items: [
+        { label: "Danh mục phụ cấp", path: `/${companyCode}/allowances`, icon: Wallet, roles: HR },
+        { label: "Cấu hình lương NV", path: `/${companyCode}/salary-config`, icon: UserCog, roles: HR },
+        { label: "Tham chiếu thuế/BH", path: `/${companyCode}/payroll-references`, icon: ScrollText, roles: HR },
+      ],
+    },
   ],
 });
 
@@ -125,6 +136,7 @@ const Sidebar = () => {
     "Nhân sự": true,
     "Chấm công": true,
     "Nghỉ phép": true,
+    "Lương": true,
   });
 
   const toggle = (label: string) =>

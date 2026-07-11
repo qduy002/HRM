@@ -19,6 +19,7 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { EmptyState } from "@/components/ui/empty-state";
 import { TableSkeleton } from "@/components/ui/table-skeleton";
 import { dependentService } from "@/services/dependentService";
+import { payrollRefService } from "@/services/payrollRefService";
 import type { DependentRelationship, EmployeeDependent } from "@/types/employee";
 
 const REL_LABELS: Record<DependentRelationship, string> = {
@@ -53,6 +54,7 @@ export const DependentsTab = ({ employeeId }: Props) => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<EmployeeDependent | null>(null);
   const [toDelete, setToDelete] = useState<EmployeeDependent | null>(null);
+  const [dependentDeduction, setDependentDeduction] = useState<number | null>(null);
 
   const {
     register, handleSubmit, reset, formState: { errors, isSubmitting },
@@ -68,6 +70,12 @@ export const DependentsTab = ({ employeeId }: Props) => {
   };
 
   useEffect(() => { load(); }, [employeeId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    payrollRefService.getCurrentPersonalDeduction()
+      .then((pd) => setDependentDeduction(Number(pd.dependentDeduction)))
+      .catch(() => setDependentDeduction(null));
+  }, []);
 
   const openCreate = () => {
     setEditing(null);
@@ -134,7 +142,10 @@ export const DependentsTab = ({ employeeId }: Props) => {
       <div className="flex justify-between items-center">
         <div>
           <h3 className="text-lg font-semibold">Người phụ thuộc</h3>
-          <p className="text-sm text-muted-foreground">Dùng cho giảm trừ gia cảnh thuế TNCN (4.4tr/người/tháng).</p>
+          <p className="text-sm text-muted-foreground">
+            Dùng cho giảm trừ gia cảnh thuế TNCN
+            {dependentDeduction != null && ` (${dependentDeduction.toLocaleString("vi-VN")} ₫/người/tháng)`}.
+          </p>
         </div>
         <Button onClick={openCreate}>
           <Plus className="h-4 w-4" />

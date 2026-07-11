@@ -20,6 +20,9 @@ import MyLeavePage from './pages/leave/MyLeavePage';
 import PendingApprovalPage from './pages/leave/PendingApprovalPage';
 import LeaveOverviewPage from './pages/leave/LeaveOverviewPage';
 import LeaveTypesPage from './pages/leave/LeaveTypesPage';
+import AllowancesPage from './pages/payroll/AllowancesPage';
+import SalaryConfigPage from './pages/payroll/SalaryConfigPage';
+import PayrollReferencesPage from './pages/payroll/PayrollReferencesPage';
 
 import RootRedirect from './components/auth/RootRedirect';
 import TenantGuard from './components/auth/TenantGuard';
@@ -89,6 +92,9 @@ function App() {
               <Route path="leaves-pending" element={<PendingApprovalPage />} />
               <Route path="leaves" element={<LeaveOverviewPage />} />
               <Route path="leave-types" element={<LeaveTypesPage />} />
+              <Route path="allowances" element={<AllowancesPage />} />
+              <Route path="salary-config" element={<SalaryConfigPage />} />
+              <Route path="payroll-references" element={<PayrollReferencesPage />} />
             </Route>
           </Route>
 
