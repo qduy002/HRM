@@ -23,6 +23,9 @@ import LeaveTypesPage from './pages/leave/LeaveTypesPage';
 import AllowancesPage from './pages/payroll/AllowancesPage';
 import SalaryConfigPage from './pages/payroll/SalaryConfigPage';
 import PayrollReferencesPage from './pages/payroll/PayrollReferencesPage';
+import PayrollListPage from './pages/payroll/PayrollListPage';
+import PayrollDetailPage from './pages/payroll/PayrollDetailPage';
+import MyPayslipPage from './pages/payroll/MyPayslipPage';
 
 import RootRedirect from './components/auth/RootRedirect';
 import TenantGuard from './components/auth/TenantGuard';
@@ -95,6 +98,9 @@ function App() {
               <Route path="allowances" element={<AllowancesPage />} />
               <Route path="salary-config" element={<SalaryConfigPage />} />
               <Route path="payroll-references" element={<PayrollReferencesPage />} />
+              <Route path="payroll" element={<PayrollListPage />} />
+              <Route path="payroll/:id" element={<PayrollDetailPage />} />
+              <Route path="my-payslip" element={<MyPayslipPage />} />
             </Route>
           </Route>
 

@@ -3,9 +3,8 @@
 > Tài liệu này mô tả toàn bộ schema database HRM (31 bảng): cấu trúc cột, ràng buộc, quan hệ, ER diagram. Cập nhật theo tiến độ sprint. Sprint plan: xem [PLAN.md](PLAN.md).
 
 **Legend:**
-- 🟢 Sprint 0 (done)
-- 🟡 Sprint 1 (đang design/build)
-- ⚪ Sprint 2/3/4 (chưa detail, chỉ liệt kê tên + mục đích)
+- 🟢 Sprint 0-3 (done)
+- ⚪ Sprint 4 (chưa detail, chỉ liệt kê tên + mục đích)
 
 ---
 
@@ -34,12 +33,12 @@
 | Sprint | Module | Bảng | Số | Status |
 |---|---|---|---|---|
 | S0 | Auth (global) | `companies`, `users`, `sessions` | 3 | 🟢 |
-| S3 | Payroll ref (global) | `insurance_rates`, `tax_brackets`, `personal_deduction_rates` | 3 | ⚪ |
-| S1 | Organization | `branches`, `departments`, `positions`, `levels` | 4 | 🟡 |
-| S1 | Employee | `employees`, `employee_positions`, `contracts`, `employee_dependents`, `emergency_contacts`, `employee_educations`, `employee_experiences`, `employee_documents` | 8 | 🟡 |
-| S2 | Attendance | `shifts`, `work_schedules`, `attendances` | 3 | ⚪ |
-| S2 | Leave | `leave_types`, `leave_balances`, `leave_requests` | 3 | ⚪ |
-| S3 | Payroll | `salary_structures`, `allowances`, `employee_allowances`, `payrolls`, `payroll_items` | 5 | ⚪ |
+| S3 | Payroll ref (global) | `insurance_rates`, `tax_brackets`, `personal_deduction_rates` | 3 | 🟢 |
+| S1 | Organization | `branches`, `departments`, `positions`, `levels` | 4 | 🟢 |
+| S1 | Employee | `employees`, `employee_positions`, `contracts`, `employee_dependents`, `emergency_contacts`, `employee_educations`, `employee_experiences`, `employee_documents` | 8 | 🟢 |
+| S2 | Attendance | `shifts`, `work_schedules`, `attendances` | 3 | 🟢 |
+| S2 | Leave | `leave_types`, `leave_balances`, `leave_requests` | 3 | 🟢 |
+| S3 | Payroll | `salary_structures`, `allowances`, `employee_allowances`, `payrolls`, `payroll_items` | 5 | 🟢 |
 | S4 | Cross-cutting | `notifications`, `audit_logs`, `company_configs` | 3 | ⚪ |
 | | **Tổng** | | **31** | |
 
@@ -101,17 +100,62 @@
 
 **Index:** `userId`, `refreshToken`, `expiresAt`.
 
-### 3.4 `insurance_rates` ⚪ (Sprint 3)
-Tỷ lệ đóng BHXH/BHYT/BHTN theo năm. Cập nhật khi luật đổi.
-Cột dự kiến: `year`, `bhxhEmployee`, `bhytEmployee`, `bhtnEmployee`, `bhxhCompany`, `bhytCompany`, `bhtnCompany`, `effectiveFrom`, `effectiveTo`.
+### 3.4 `insurance_rates` 🟢 (Sprint 3)
+Tỷ lệ đóng BHXH/BHYT/BHTN + lương tối thiểu vùng theo năm. Versioned bằng `effectiveFrom/To`.
 
-### 3.5 `tax_brackets` ⚪ (Sprint 3)
-7 bậc thuế TNCN VN: 5% / 10% / 15% / 20% / 25% / 30% / 35%.
-Cột: `bracket`, `fromAmount`, `toAmount`, `rate`, `effectiveFrom`, `effectiveTo`.
+| Cột | Kiểu | Null | Mô tả |
+|---|---|---|---|
+| id | INT PK | | |
+| year | INT | ❌ | Năm áp dụng (dùng cho label + audit) |
+| bhxhEmployee | DECIMAL(5,2) | ❌ | Tỷ lệ % NV đóng BHXH (default 8.0) |
+| bhytEmployee | DECIMAL(5,2) | ❌ | Default 1.5 |
+| bhtnEmployee | DECIMAL(5,2) | ❌ | Default 1.0 |
+| bhxhCompany | DECIMAL(5,2) | ❌ | Default 17.5 |
+| bhytCompany | DECIMAL(5,2) | ❌ | Default 3.0 |
+| bhtnCompany | DECIMAL(5,2) | ❌ | Default 1.0 |
+| minRegion1Wage | DECIMAL(15,2) | ❌ | Lương tối thiểu vùng 1 (VND/tháng) |
+| minRegion2Wage | DECIMAL(15,2) | ❌ | Vùng 2 |
+| minRegion3Wage | DECIMAL(15,2) | ❌ | Vùng 3 |
+| minRegion4Wage | DECIMAL(15,2) | ❌ | Vùng 4 |
+| salaryBaseCapMultiplier | INT | ❌ | Cap BHXH = X × min vùng 1. Default 20 (luật hiện hành) |
+| effectiveFrom | DATE | ❌ | Bắt buộc |
+| effectiveTo | DATE | ✓ | NULL = còn hiệu lực |
+| note | TEXT | ✓ | Ghi chú số văn bản (VD "NĐ 293/2025/NĐ-CP") |
 
-### 3.6 `personal_deduction_rates` ⚪ (Sprint 3)
-Mức giảm trừ bản thân (11tr/tháng) + người phụ thuộc (4.4tr/tháng).
-Cột: `selfDeduction`, `dependentDeduction`, `effectiveFrom`, `effectiveTo`.
+**Data đã seed:**
+- Record 2024 (NĐ 74/2024/NĐ-CP): vùng 1 = 4.96M — `effectiveFrom=2024-07-01, effectiveTo=2025-12-31`
+- Record 2026 (NĐ 293/2025/NĐ-CP): vùng 1 = 5.31M, cap = 106.2M — `effectiveFrom=2026-01-01, effectiveTo=NULL` ← hiện hành
+
+### 3.5 `tax_brackets` 🟢 (Sprint 3)
+7 bậc thuế TNCN VN — Luật thuế TNCN 04/2007/QH12, sửa đổi 2012.
+
+| Cột | Kiểu | Null | Mô tả |
+|---|---|---|---|
+| id | INT PK | | |
+| bracketNumber | INT | ❌ | 1..7 |
+| fromAmount | DECIMAL(15,2) | ❌ | Ngưỡng dưới TN chịu thuế/tháng |
+| toAmount | DECIMAL(15,2) | ✓ | Ngưỡng trên. NULL = bậc cao nhất (>80M) |
+| rate | DECIMAL(5,2) | ❌ | Thuế suất % |
+| effectiveFrom | DATE | ❌ | |
+| effectiveTo | DATE | ✓ | |
+
+**Data đã seed** (2020-07-01, còn hiệu lực): 5%(0–5M) → 10%(5–10M) → 15%(10–18M) → 20%(18–32M) → 25%(32–52M) → 30%(52–80M) → 35%(>80M).
+
+### 3.6 `personal_deduction_rates` 🟢 (Sprint 3)
+Mức giảm trừ gia cảnh cho thuế TNCN. Versioned.
+
+| Cột | Kiểu | Null | Mô tả |
+|---|---|---|---|
+| id | INT PK | | |
+| selfDeduction | DECIMAL(15,2) | ❌ | Giảm trừ bản thân/tháng (VND) |
+| dependentDeduction | DECIMAL(15,2) | ❌ | Giảm trừ /người phụ thuộc/tháng |
+| effectiveFrom | DATE | ❌ | |
+| effectiveTo | DATE | ✓ | |
+| note | TEXT | ✓ | |
+
+**Data đã seed:**
+- Record 2020 (NQ 954/2020/UBTVQH14): self 11M, dep 4.4M — `effectiveTo=2026-06-30`
+- Record 2026 (NQ 110/2025/UBTVQH15): self 15.5M, dep 6.2M — `effectiveFrom=2026-07-01, effectiveTo=NULL` ← hiện hành
 
 ---
 
@@ -447,12 +491,109 @@ Thêm cột `workingDays` JSONB DEFAULT `{"mon":1,"tue":1,"wed":1,"thu":1,"fri":
 - Giá trị: `1` = ngày làm đủ, `0.5` = nửa ngày, `0` = nghỉ
 - Dùng khi tính `leave_requests.days`
 
-### 6.3 Payroll ⚪ (Sprint 3)
-- **`salary_structures`** — cấu trúc lương versioned (NV × basicSalary × bhxhSalary × effectiveFrom-To)
-- **`allowances`** — danh mục phụ cấp (ăn trưa, xăng xe, điện thoại…)
-- **`employee_allowances`** — phụ cấp gán cho từng NV
-- **`payrolls`** — bảng lương tháng (NV × month × year × gross × BH × thuế × net × status)
-- **`payroll_items`** — chi tiết dòng lương (earning/deduction/insurance/tax)
+### 6.3 Payroll 🟢 (Sprint 3)
+
+#### 6.3.1 `salary_structures` — Cấu trúc lương versioned
+
+| Cột | Kiểu | Null | Mô tả |
+|---|---|---|---|
+| id | INT PK | | |
+| companyId | INT FK | ❌ | |
+| employeeId | INT FK → `employees.id` | ❌ | CASCADE |
+| basicSalary | DECIMAL(15,2) | ❌ | Lương cơ bản/tháng (dùng tính prorated + hourly rate OT) |
+| bhxhSalary | DECIMAL(15,2) | ❌ | Lương đóng BHXH (thường = basicSalary, có thể khác nếu tối ưu) |
+| effectiveFrom | DATE | ❌ | Ngày bắt đầu áp dụng |
+| effectiveTo | DATE | ✓ | Tự động set khi tạo record mới (ngày trước ngày hiệu lực mới) |
+| note | TEXT | ✓ | Ghi chú lý do (tăng cấp, KPI, sáp nhập lương) |
+
+**Business rule:** Tăng lương = INSERT record mới. Controller `POST /salary-structures` auto set `effectiveTo` cho record cũ (còn `NULL`) = ngày trước `effectiveFrom` mới.
+
+#### 6.3.2 `allowances` — Danh mục phụ cấp (per-tenant)
+
+| Cột | Kiểu | Null | Mô tả |
+|---|---|---|---|
+| id | INT PK | | |
+| companyId | INT FK | ❌ | |
+| code | VARCHAR(30) | ❌ | LUNCH, FUEL, PHONE... UNIQUE `(companyId, code)` |
+| name | VARCHAR(200) | ❌ | Tên hiển thị |
+| defaultAmount | DECIMAL(15,2) | ✓ | Mức mặc định khi gán NV (có thể override) |
+| isTaxable | BOOLEAN | ❌ | Default `true`. `false` = miễn thuế TNCN (VD ăn trưa) |
+| description | TEXT | ✓ | |
+| isActive | BOOLEAN | ❌ | Default `true` |
+
+#### 6.3.3 `employee_allowances` — Gán phụ cấp cho NV
+
+| Cột | Kiểu | Null | Mô tả |
+|---|---|---|---|
+| id | INT PK | | |
+| companyId | INT FK | ❌ | |
+| employeeId | INT FK | ❌ | |
+| allowanceId | INT FK → `allowances.id` | ❌ | |
+| amount | DECIMAL(15,2) | ❌ | Số tiền/tháng (có thể khác `defaultAmount` của allowance) |
+| effectiveFrom | DATE | ❌ | |
+| effectiveTo | DATE | ✓ | NULL = còn áp dụng |
+| note | TEXT | ✓ | |
+
+#### 6.3.4 `payrolls` — Bảng lương tháng (immutable snapshot)
+
+Mọi số tiền là **snapshot** — không tính lại từ tham chiếu khi query. Đảm bảo audit trail và tránh drift khi rate đổi.
+
+| Cột | Kiểu | Null | Mô tả |
+|---|---|---|---|
+| id | INT PK | | |
+| companyId | INT FK | ❌ | |
+| employeeId | INT FK | ❌ | |
+| month | INT | ❌ | 1..12 |
+| year | INT | ❌ | |
+| fromDate / toDate | DATE | ❌ | Kỳ lương (thường = full month) |
+| basicSalary | DECIMAL(15,2) | ❌ | Snapshot lương cơ bản |
+| bhxhSalaryBase | DECIMAL(15,2) | ❌ | Lương đóng BHXH sau cap (min(bhxhSalary, 20×min-region-1)) |
+| workingDaysStandard | DECIMAL(5,2) | ❌ | Ngày công chuẩn của tháng (từ `companies.workingDays`) |
+| actualPaidDays | DECIMAL(5,2) | ❌ | Ngày công thực có lương (on_time+late+early_leave+on_leave+holiday) |
+| otHours | DECIMAL(6,2) | ❌ | Tổng giờ OT |
+| grossSalary | DECIMAL(15,2) | ❌ | prorated basic + OT pay + tất cả phụ cấp |
+| totalTaxableAllowance | DECIMAL(15,2) | ❌ | |
+| totalNonTaxableAllowance | DECIMAL(15,2) | ❌ | |
+| bhxhAmount | DECIMAL(15,2) | ❌ | NV đóng 8% × bhxhSalaryBase |
+| bhytAmount | DECIMAL(15,2) | ❌ | 1.5% |
+| bhtnAmount | DECIMAL(15,2) | ❌ | 1% |
+| totalInsuranceEmployee | DECIMAL(15,2) | ❌ | Tổng BH NV đóng |
+| selfDeduction | DECIMAL(15,2) | ❌ | Snapshot giảm trừ bản thân |
+| dependentCount | INT | ❌ | Số NPT active tại kỳ lương |
+| dependentDeduction | DECIMAL(15,2) | ❌ | Snapshot giảm trừ /NPT |
+| taxableIncome | DECIMAL(15,2) | ❌ | max(0, prorated + taxableAllow − insurance − self − dep×deduction) |
+| personalIncomeTax | DECIMAL(15,2) | ❌ | PIT progressive |
+| netSalary | DECIMAL(15,2) | ❌ | gross − insurance − PIT |
+| status | VARCHAR(20) | ❌ | `draft` \| `finalized` \| `paid` |
+| finalizedBy / finalizedAt | INT FK, TIMESTAMP | ✓ | User + thời điểm chốt |
+| paidBy / paidAt | INT FK, TIMESTAMP | ✓ | Đánh dấu đã trả |
+| unlockCount | INT | ❌ | Số lần unlock từ `finalized` về `draft` (audit) |
+| note | TEXT | ✓ | |
+
+**Ràng buộc:** UNIQUE `(companyId, employeeId, month, year)` — 1 NV chỉ 1 bảng lương/tháng.
+
+**Workflow:**
+```
+draft → finalize()   → finalized → mark-paid() → paid
+              ↑                  ↓
+              └── unlock() ──────┘   (unlockCount++)
+```
+
+#### 6.3.5 `payroll_items` — Chi tiết dòng lương
+
+Hiển thị breakdown trên payslip. Tổng của earnings − tổng của các loại còn lại = netSalary.
+
+| Cột | Kiểu | Null | Mô tả |
+|---|---|---|---|
+| id | INT PK | | |
+| companyId | INT FK | ❌ | |
+| payrollId | INT FK → `payrolls.id` | ❌ | CASCADE |
+| type | VARCHAR(20) | ❌ | `earning` \| `deduction` \| `insurance` \| `tax` |
+| code | VARCHAR(30) | ❌ | BASIC, OT, LUNCH, BHXH, PIT... |
+| name | VARCHAR(200) | ❌ | Label hiển thị (kèm số ngày/% rate nếu có) |
+| amount | DECIMAL(15,2) | ❌ | |
+| note | TEXT | ✓ | |
+| sortOrder | INT | ❌ | Thứ tự hiển thị |
 
 ### 6.4 Cross-cutting ⚪ (Sprint 4)
 - **`notifications`** — thông báo in-app

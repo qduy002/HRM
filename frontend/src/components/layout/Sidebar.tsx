@@ -17,6 +17,8 @@ import {
   Wallet,
   UserCog,
   ScrollText,
+  Receipt,
+  Coins,
   ChevronDown,
   ChevronRight,
   type LucideIcon,
@@ -117,6 +119,14 @@ const buildNav = (companyCode: string): { top: NavItem[]; groups: NavGroup[] } =
     {
       label: "Lương",
       items: [
+        {
+          label: "Payslip của tôi",
+          path: `/${companyCode}/my-payslip`,
+          icon: Receipt,
+          roles: ALL_TENANT,
+          requiresEmployee: true,
+        },
+        { label: "Bảng lương", path: `/${companyCode}/payroll`, icon: Coins, roles: HR },
         { label: "Danh mục phụ cấp", path: `/${companyCode}/allowances`, icon: Wallet, roles: HR },
         { label: "Cấu hình lương NV", path: `/${companyCode}/salary-config`, icon: UserCog, roles: HR },
         { label: "Tham chiếu thuế/BH", path: `/${companyCode}/payroll-references`, icon: ScrollText, roles: HR },

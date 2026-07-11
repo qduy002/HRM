@@ -56,7 +56,7 @@
 | `sessions` | Refresh token store |
 | `insurance_rates` | Tỷ lệ BHXH/BHYT/BHTN theo năm (luật VN chung) |
 | `tax_brackets` | Bậc thuế TNCN (7 bậc) |
-| `personal_deduction_rates` | Giảm trừ bản thân (11tr) + người phụ thuộc (4.4tr) |
+| `personal_deduction_rates` | Giảm trừ bản thân (15.5tr từ 2026-07-01) + người phụ thuộc (6.2tr) |
 
 ### 3.2 PER-TENANT (có `companyId` NOT NULL + composite index) — 25 bảng
 
@@ -317,17 +317,21 @@ protectedRoute (verify JWT)
 
 - ✅ Base FE + BE + DB PostgreSQL sync xong
 - ✅ **Sprint 0 done** — Multi-tenant foundation (companies, users, sessions, auth flow signup-tenant/signin/signout/refresh, super_admin seed, FE routing `/:companyCode/*`, TenantGuard/SuperAdminGuard/RootRedirect, TenantLayout/SuperAdminLayout, tested E2E)
-- ✅ **Sprint 1 Batch A** — Backend Organization (4 models + CRUD + verify E2E)
-- ✅ **Sprint 1 Batch B** — Backend Employee (8 models + 7 controllers + code auto-gen + grant-account + change-position + verify E2E)
-- ✅ **Sprint 1 Batch C** — FE Organization (sidebar collapsible + 4 CRUD pages với EmptyState + TableSkeleton + dirty-guard + department tree view)
-- ✅ **Sprint 1 Batch D** — FE Employee (list + filter + pagination + 8 tabs detail + grant account + change position + all 6 sub-resources)
-- ✅ Bug fixes: F5 race condition access token, axios interceptor retry 401
+- ✅ **Sprint 1 done** — Organization + Employee (BE 12 models + FE 4 org pages + Employee list/detail 8 tabs + grant-account + change-position)
+- ✅ **Sprint 1.5** — Dashboard real numbers
+- ✅ **Sprint 1.6** — Cloudflare R2 upload (presigned URL, Content-Disposition RFC 5987)
+- ✅ **Sprint 2 done** — Attendance + Leave (BE 6 models + workflow 3-tier NV → Manager → HR + admin bypass direct-approve, FE chấm công + xin nghỉ + duyệt + báo cáo tháng)
+- ✅ **Sprint 3 Batch A** — BE Payroll references (3 global + 3 per-tenant models, CRUD, seed script)
+- ✅ **Sprint 3 Batch B** — BE Payroll Engine (payrolls + payroll_items models, `computePayroll` engine với progressive PIT + BHXH cap + attendance-driven proration, 9 endpoints, workflow draft/finalized/paid + unlock)
+- ✅ **Sprint 3 Batch C** — FE Config (AllowancesPage + SalaryConfigPage với versioned view + PayrollReferencesPage read-only)
+- ✅ **Sprint 3 Batch D** — FE Payroll (PayrollListPage với filter + preview dialog + generate + export CSV, PayrollDetailPage, MyPayslipPage, shared PayslipView)
+- ✅ Bug fixes: F5 race condition access token, axios interceptor retry 401, CORS localhost multiport, hasEmployee flag, R2 filename từ extension key
 - ✅ Seed data mẫu: 16 branches, 28 departments (3-cấp tree), 24 positions, 10 levels — script `npm run seed:org`
+- ✅ Seed payroll refs: NĐ 293/2025 (min wage 2026 tăng 7.2%), NQ 110/2025 (giảm trừ 15.5M/6.2M từ 2026-07-01), 7 bậc PIT
 
-**Roadmap tiếp theo (đã chốt sau khi Batch D xong):**
-1. ⏭️ **Sprint 1.5 — Dashboard real numbers** (~30 phút) — thay số 0 hardcode trong DashboardPage bằng count thực từ stores (NV, chi nhánh, phòng ban, chức danh)
-2. ⏭️ **Sprint 1.6 — Mini-sprint Cloudflare R2** (upload thật) — cài `@aws-sdk/client-s3`, đổi ô Link PDF/URL thành nút chọn file, path convention `uploads/{companyId}/employees/{employeeId}/...`. Cần user cung cấp: `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET_NAME`.
-3. ⏭️ **Sprint 2 — Attendance + Leave** — theo plan §6
-4. **Sprint 1 polish backlog** (14 mục đã lưu ở §6 Sprint 1) — để cuối Sprint 3 làm 1 đợt trước khi go-live, không làm sớm.
+**Roadmap tiếp theo:**
+1. ⏭️ **Sprint 4 — Polish** — notifications, audit_logs, RLS PostgreSQL, company_configs (theo §6 Sprint 4)
+2. ⏭️ Backlog: hợp đồng-lương consistency warning banner, sort/pagination/search polish (Sprint 1 backlog §6), PDF payslip generator, OT 200%/300% CN/lễ
+3. ⏭️ Test framework setup (Vitest + Supertest) — chưa có test, cần trước khi go-live
 
 Schema xem [DB_SCHEMA.md](DB_SCHEMA.md).
