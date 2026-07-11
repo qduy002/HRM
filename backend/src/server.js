@@ -20,6 +20,10 @@ import attendanceRoute from './routes/attendanceRoute.js';
 import leaveTypeRoute from './routes/leaveTypeRoute.js';
 import leaveBalanceRoute from './routes/leaveBalanceRoute.js';
 import leaveRequestRoute from './routes/leaveRequestRoute.js';
+import payrollRefRoute from './routes/payrollRefRoute.js';
+import salaryStructureRoute from './routes/salaryStructureRoute.js';
+import allowanceRoute from './routes/allowanceRoute.js';
+import employeeAllowanceRoute from './routes/employeeAllowanceRoute.js';
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -63,6 +67,12 @@ app.use('/api/attendances', protectedRoute, tenantMiddleware, attendanceRoute);
 app.use('/api/leave-types', protectedRoute, tenantMiddleware, leaveTypeRoute);
 app.use('/api/leave-balances', protectedRoute, tenantMiddleware, leaveBalanceRoute);
 app.use('/api/leave-requests', protectedRoute, tenantMiddleware, leaveRequestRoute);
+
+// Sprint 3: Payroll
+app.use('/api', protectedRoute, tenantMiddleware, payrollRefRoute);
+app.use('/api/salary-structures', protectedRoute, tenantMiddleware, salaryStructureRoute);
+app.use('/api/allowances', protectedRoute, tenantMiddleware, allowanceRoute);
+app.use('/api/employee-allowances', protectedRoute, tenantMiddleware, employeeAllowanceRoute);
 
 connectDB().then(() => {
     app.listen(PORT, () => {

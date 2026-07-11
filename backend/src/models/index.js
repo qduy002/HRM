@@ -22,6 +22,14 @@ import Attendance from './Attendance.js';
 import LeaveType from './LeaveType.js';
 import LeaveBalance from './LeaveBalance.js';
 import LeaveRequest from './LeaveRequest.js';
+// Sprint 3: Payroll References (global)
+import InsuranceRate from './InsuranceRate.js';
+import TaxBracket from './TaxBracket.js';
+import PersonalDeductionRate from './PersonalDeductionRate.js';
+// Sprint 3: Payroll config (per-tenant)
+import SalaryStructure from './SalaryStructure.js';
+import Allowance from './Allowance.js';
+import EmployeeAllowance from './EmployeeAllowance.js';
 
 export {
     Company,
@@ -45,4 +53,10 @@ export {
     LeaveType,
     LeaveBalance,
     LeaveRequest,
+    InsuranceRate,
+    TaxBracket,
+    PersonalDeductionRate,
+    SalaryStructure,
+    Allowance,
+    EmployeeAllowance,
 };

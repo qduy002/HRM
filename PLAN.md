@@ -241,8 +241,21 @@ protectedRoute (verify JWT)
 - FE: Trang cấu hình lương NV
 - FE: Trang generate + xem bảng lương tháng (HR)
 - FE: Trang payslip cá nhân NV
+- FE: Export CSV bảng lương + PDF payslip
 
-**Done khi:** Generate bảng lương tháng cho 10 NV, khớp công thức VN. NV xem được payslip mình.
+**Design decisions (chốt Sprint 3):**
+- **BHXH salary cap:** theo luật — 20× lương tối thiểu vùng (config được trong `insurance_rates`)
+- **Số ngày công chuẩn:** tính từ `companies.workingDays` (Sprint 2) — sum weight của các ngày trong tháng
+- **OT rate:** 150% cố định (chuẩn VN 200%/300% cho CN/lễ đưa vào Sprint 4)
+- **Non-taxable allowance:** field `isTaxable` boolean. HR tự chuẩn max exempt (không auto cap)
+- **Allowance calculation:** chỉ fixed amount (percentage đưa vào backlog)
+- **Attendance impact:** `lương thực nhận = basicSalary × (ngày công thực / ngày công chuẩn)`. Ngày phép có lương tính đủ, phép không lương/vắng trừ 1 công
+- **Bonus:** HR input manual thêm vào `payroll_items` type=`bonus`
+- **Payroll status flow:** `draft` → `finalized` → `paid` (finalized khóa; muốn sửa phải unlock có audit)
+- **Payslip:** show full breakdown (gross, từng allowance, insurance chi tiết, tax, net)
+- **Export:** CSV bảng lương tháng + PDF payslip cá nhân
+
+**Done khi:** Generate bảng lương tháng cho 10 NV, khớp công thức VN. NV xem được payslip mình. Export CSV OK.
 
 ### Sprint 4 — Polish
 **Deliverables:**
