@@ -253,6 +253,34 @@ export const markPaid = async (req, res) => {
     }
 };
 
+// DELETE /api/payrolls/:id
+// Chỉ xóa được payroll status = draft (immutability sau khi finalize).
+export const deletePayroll = async (req, res) => {
+    const t = await sequelize.transaction();
+    try {
+        const payroll = await Payroll.findOne({
+            where: { id: req.params.id, ...scopeToCompany(req) },
+            transaction: t,
+        });
+        if (!payroll) {
+            await t.rollback();
+            return res.status(404).json({ message: 'Không tìm thấy bảng lương' });
+        }
+        if (payroll.status !== 'draft') {
+            await t.rollback();
+            return res.status(400).json({ message: `Chỉ xóa được bảng lương nháp, hiện tại: ${payroll.status}` });
+        }
+        await PayrollItem.destroy({ where: { payrollId: payroll.id }, transaction: t });
+        await payroll.destroy({ transaction: t });
+        await t.commit();
+        return res.status(204).end();
+    } catch (error) {
+        await t.rollback();
+        console.error('Lỗi xóa payroll:', error);
+        return res.status(500).json({ message: 'Lỗi hệ thống !!!' });
+    }
+};
+
 // GET /api/payrolls/export?month=&year=
 // Export CSV bảng lương tháng
 export const exportPayrollCSV = async (req, res) => {

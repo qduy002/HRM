@@ -289,8 +289,22 @@ const EmployeesPage = () => {
                     const pos = currentPos(emp);
                     return (
                       <TableRow key={emp.id}>
-                        <TableCell className="font-mono font-medium">{emp.code}</TableCell>
-                        <TableCell>{emp.displayName}</TableCell>
+                        <TableCell className="font-mono font-medium">
+                          <Link
+                            to={`/${companyCode}/employees/${emp.id}`}
+                            className="hover:text-primary hover:underline"
+                          >
+                            {emp.code}
+                          </Link>
+                        </TableCell>
+                        <TableCell>
+                          <Link
+                            to={`/${companyCode}/employees/${emp.id}`}
+                            className="hover:text-primary hover:underline"
+                          >
+                            {emp.displayName}
+                          </Link>
+                        </TableCell>
                         <TableCell className="text-sm">{pos?.Branch?.name ?? "-"}</TableCell>
                         <TableCell className="text-sm">{pos?.Department?.name ?? "-"}</TableCell>
                         <TableCell className="text-sm">{pos?.Position?.name ?? "-"}</TableCell>

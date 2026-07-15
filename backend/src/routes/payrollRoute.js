@@ -8,6 +8,7 @@ import {
     finalizePayroll,
     unlockPayroll,
     markPaid,
+    deletePayroll,
     exportPayrollCSV,
 } from '../controllers/payrollController.js';
 import { requireRole } from '../middlewares/authMiddleware.js';
@@ -24,5 +25,6 @@ router.post('/preview', requireRole('admin', 'hr'), previewPayroll);
 router.post('/:id/finalize', requireRole('admin', 'hr'), finalizePayroll);
 router.post('/:id/unlock', requireRole('admin', 'hr'), unlockPayroll);
 router.post('/:id/mark-paid', requireRole('admin', 'hr'), markPaid);
+router.delete('/:id', requireRole('admin', 'hr'), deletePayroll);
 
 export default router;

@@ -48,6 +48,10 @@ export const payrollService = {
     return res.data.payroll;
   },
 
+  delete: async (id: number): Promise<void> => {
+    await api.delete(`/payrolls/${id}`);
+  },
+
   exportCSV: async (month: number, year: number): Promise<Blob> => {
     const res = await api.get("/payrolls/export", {
       params: { month, year },

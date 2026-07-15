@@ -24,8 +24,7 @@ const formatSize = (bytes: number) => {
 };
 
 const filenameFromKey = (key: string) => {
-  const parts = key.split("/");
-  const last = parts[parts.length - 1] || key;
+  const last = key.split("/").pop() || key;
   // Định dạng "timestamp-hash-originalname.ext" → strip prefix
   const m = last.match(/^\d+-[a-f0-9]+-(.+)$/);
   return m ? m[1] : last;
@@ -114,10 +113,15 @@ export const FileUpload = ({
           )}
         </Button>
       ) : (
-        <div className="flex items-center gap-2 rounded-md border p-2 bg-muted/30">
-          <FileText className="h-4 w-4 text-primary shrink-0" />
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium truncate">{displayName}</p>
+        <div className="grid grid-cols-[auto_1fr_auto_auto] items-center gap-2 rounded-md border p-2 bg-muted/30 w-full">
+          <FileText className="h-4 w-4 text-primary" />
+          <div className="min-w-0 overflow-hidden">
+            <p
+              className="text-sm font-medium overflow-hidden text-ellipsis whitespace-nowrap"
+              title={displayName}
+            >
+              {displayName}
+            </p>
             <p className="text-xs text-muted-foreground">
               {meta?.size ? formatSize(meta.size) : ""}
               {isHttpUrl && (

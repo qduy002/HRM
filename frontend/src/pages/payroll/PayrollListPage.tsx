@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
 import {
-  Download, Eye, FileText, Lock, MoreHorizontal, Play, Plus, Unlock,
+  Download, Eye, FileText, Lock, MoreHorizontal, Play, Plus, Trash2, Unlock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -59,6 +59,7 @@ const PayrollListPage = () => {
   const [generating, setGenerating] = useState(false);
 
   const [actionTarget, setActionTarget] = useState<{ payroll: Payroll; action: "finalize" | "unlock" | "mark-paid" } | null>(null);
+  const [toDelete, setToDelete] = useState<Payroll | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -135,6 +136,19 @@ const PayrollListPage = () => {
     } catch (e) {
       const msg = (e as { response?: { data?: { message?: string } } })?.response?.data?.message;
       toast.error(msg ?? "Thất bại");
+    }
+  };
+
+  const runDelete = async () => {
+    if (!toDelete) return;
+    try {
+      await payrollService.delete(toDelete.id);
+      toast.success("Đã xóa bảng lương nháp");
+      setToDelete(null);
+      load();
+    } catch (e) {
+      const msg = (e as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      toast.error(msg ?? "Xóa thất bại");
     }
   };
 
@@ -316,9 +330,14 @@ const PayrollListPage = () => {
                             <Eye className="h-4 w-4" />Xem chi tiết
                           </DropdownMenuItem>
                           {p.status === "draft" && (
-                            <DropdownMenuItem onSelect={() => setActionTarget({ payroll: p, action: "finalize" })}>
-                              <Lock className="h-4 w-4" />Chốt bảng lương
-                            </DropdownMenuItem>
+                            <>
+                              <DropdownMenuItem onSelect={() => setActionTarget({ payroll: p, action: "finalize" })}>
+                                <Lock className="h-4 w-4" />Chốt bảng lương
+                              </DropdownMenuItem>
+                              <DropdownMenuItem className="text-destructive" onSelect={() => setToDelete(p)}>
+                                <Trash2 className="h-4 w-4" />Xóa nháp
+                              </DropdownMenuItem>
+                            </>
                           )}
                           {p.status === "finalized" && (
                             <>
@@ -401,6 +420,17 @@ const PayrollListPage = () => {
         description="Tính cho tất cả NV active (probation/active/on_leave) có cấu trúc lương. Bảng đã tồn tại sẽ bị bỏ qua (không ghi đè)."
         confirmText={generating ? "Đang tính..." : "Bắt đầu tính"}
         onConfirm={runGenerate}
+      />
+
+      {/* Delete draft confirm */}
+      <ConfirmDialog
+        open={!!toDelete}
+        onOpenChange={(open) => !open && setToDelete(null)}
+        title="Xóa bảng lương nháp?"
+        description={`Xóa bảng lương ${toDelete?.Employee?.code} tháng ${toDelete ? String(toDelete.month).padStart(2, "0") + "/" + toDelete.year : ""}? Chỉ xóa được khi status = nháp. Sau khi xóa có thể regenerate lại.`}
+        confirmText="Xóa"
+        variant="destructive"
+        onConfirm={runDelete}
       />
 
       {/* Action confirm */}
